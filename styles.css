@@ -1,0 +1,99 @@
+img {display:none;}
+
+BODY, A, A:link, A:hover, A:visited {
+	COLOR: black;
+	FONT-FAMILY: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helvetica, Sans-Serif;
+	FONT-SIZE: 8pt;
+	
+	FONT-WEIGHT: bolder;
+	LINE-HEIGHT: 10pt;
+	
+	MARGIN: 0px;
+	PADDING: 0px;
+}
+input, select, TD {
+	COLOR: black ;
+	FONT-FAMILY: Tahoma, Verdana, Arial, Helvetica, Sans-Serif;
+	FONT-SIZE: 8pt;
+	TEXT-DECORATION: none;
+	MARGIN: 0px;
+	PADDING: 0px;
+}
+.error {
+	background-color: yellow;
+	font-family: verdana, tahoma;
+	font-size: 9pt;
+	font-weight: bold;
+	color: red;
+}
+.heading {
+	COLOR: #444444;
+	FONT-FAMILY: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helvetica, Sans-Serif;
+	FONT-SIZE: 12pt;
+	
+	FONT-WEIGHT: bolder;
+	TEXT-DECORATION: none;
+}
+.blurb {
+	COLOR: #96AAA8;
+	FONT-FAMILY: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helvetica, Sans-Serif;
+	FONT-SIZE: 14pt;
+	FONT-STYLE: italic;
+	FONT-WEIGHT: bold;
+	TEXT-DECORATION: none;
+}
+.info {
+	COLOR: #444444;
+	FONT-FAMILY: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helvetica, Sans-Serif;
+	FONT-SIZE: 8pt;	
+	FONT-WEIGHT: bolder;
+	TEXT-DECORATION: none;
+}
+.note{
+	COLOR: black;
+	FONT-WEIGHT: normal;
+	FONT-SIZE: 7.5pt;
+}
+.title{
+	COLOR: BLACK;
+	FONT-WEIGHT: normal;
+}
+
+.rightjust {
+	text-align: center;
+	
+}
+input.hrs{
+	font-size: 6pt;
+	text-align: left;
+}
+.textbox {
+	WIDTH: 50px;
+}
+table.rep {
+	border-style: solid;
+	border-width: 1px;
+}
+td {
+	border-style: none;
+}
+td.rep {
+		border-style: solid;
+	border-width: 1px;
+}
+tr.rep {
+		border-style: solid;
+	border-width: 1px;
+}
+td.logo {
+  		 background: url(images/printlogo.gif) no-repeat top left;
+  	}
+@media print
+{
+  .page-break  { 
+  	page-break-before:always; 
+  	}
+  	
+}
+
+

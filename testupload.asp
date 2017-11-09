@@ -1,0 +1,94 @@
+<%@Language=VBScript%>
+<!-- #include file="_Files.asp" -->
+<!-- #include file="_Utils.asp" -->
+<!-- #include file="_security.asp" -->
+<%
+Function MakeNewFileName()
+	strNow = Now
+	strNow = Replace(strNow, "/", "")
+	strNow = Replace(strNow, ":", "")
+	strNow = Replace(strNow, " ", "")
+	MakeNewFileName = strNow
+End Function
+If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
+	Server.ScriptTimeout = 10800
+	'upload file to server
+	Set oUpload = Server.CreateObject("SCUpload.Upload")
+	oUpload.Upload
+	If oUpload.Files.Count = 0 Then
+		Set oUpload = Nothing
+		Session("MSG") = "Please specify a file to import."
+		Response.Redirect "import.asp"
+	End If
+	oFileName = oUpload.Files(1).Item(1).filename
+	If Z_GetExt(oFileName) <> "CSV" Then
+		Set oUpload = Nothing
+		Session("MSG") = "Invalid File."
+		Response.Redirect "import.asp"
+	End If
+	nFileName = MakeNewFileName() & ".CSV"
+	oUpload.Files(1).Item(1).Save uploadFilePath, nFileName
+	Set oUpload = Nothing
+response.write "SUCCESS"
+End If
+%>
+<html>
+	<head>
+		<title>LSS - In-Home Care - Vortex Import</title>
+		<script language='JavaScript'>
+			
+		</script>
+		<style>
+			Input.btn{
+			font-size: 7.5pt;
+			font-family: arial;
+			color:#000000;
+			font-weight:bolder;
+			background-color:#d4d0c8;
+			border:2px solid;
+			text-align: center;
+			border-top-color:#d4d0c8;
+			border-left-color:#d4d0c8;
+			border-right-color:#b6b3ae;
+			border-bottom-color:#b6b3ae;
+			filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0,StartColorStr='#ffffffff',EndColorStr='#d4d0c8');
+		}
+		INPUT.hovbtn{
+			font-size: 7.5pt;
+			font-family: arial;
+			color:#000000;
+			font-weight:bolder;
+			background-color:#b6b3ae;
+			border:2px solid;
+			text-align: center;
+			border-top-color:#b6b3ae;
+			border-left-color:#b6b3ae;
+			border-right-color:#d4d0c8;
+			border-bottom-color:#d4d0c8;
+			filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0,StartColorStr='#ffffffff',EndColorStr='#b6b3ae');
+		}  
+		</style>
+	</head>
+	<body bgcolor='white' LEFTMARGIN='0' TOPMARGIN='0'>
+		<form method="POST" enctype="multipart/form-data">
+			<!-- #include file="_boxup.asp" -->
+			<!-- #include file="_NavHeader.asp" -->
+			<table border='0' align='center'>
+				<tr><td colspan='2' align='center'><font color='red'  face='trebuchet MS' size='1'>&nbsp;<%=Session("MSG")%>&nbsp;</font></td></tr>
+				<tr>
+					<td align='center'>
+						<input type="file" name="F1" size="20">
+					</td>
+				</tr>
+				<td align='center'>
+						<input type='submit' value='Import Timesheets' style='width: 200px;' class='btn' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'">
+					</td>
+				</tr>
+			</table>
+			<!-- #include file="_boxdown.asp" -->
+		</form>
+	</body>
+</html>
+<%
+Session("MSG") = "" 
+%>

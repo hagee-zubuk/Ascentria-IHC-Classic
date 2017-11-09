@@ -1,0 +1,81 @@
+@font-face {
+  font-family: Trebuchet MS, Trebuchet;
+  font-style: normal;
+  font-weight: bold;
+  
+//  src: url("Trebuchet.eot");
+}
+
+img {display:none;}
+
+BODY, A, A:link, A:hover, A:visited {
+	COLOR: black;
+	FONT-FAMILY: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helvetica, Sans-Serif;
+	FONT-SIZE: 8pt;
+	
+	FONT-WEIGHT: bolder;
+	LINE-HEIGHT: 10pt;
+	
+	MARGIN: 0px;
+	PADDING: 0px;
+}
+input, select, TD {
+	COLOR: black ;
+	FONT-FAMILY: Tahoma, Verdana, Arial, Helvetica, Sans-Serif;
+	FONT-SIZE: 8pt;
+	TEXT-DECORATION: none;
+	MARGIN: 0px;
+	PADDING: 0px;
+}
+.heading {
+	COLOR: #444444;
+	FONT-FAMILY: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helvetica, Sans-Serif;
+	FONT-SIZE: 12pt;
+	
+	FONT-WEIGHT: bolder;
+	TEXT-DECORATION: none;
+}
+.blurb {
+	COLOR: #96AAA8;
+	FONT-FAMILY: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helvetica, Sans-Serif;
+	FONT-SIZE: 14pt;
+	FONT-STYLE: italic;
+	FONT-WEIGHT: bold;
+	TEXT-DECORATION: none;
+}
+.info {
+	COLOR: #444444;
+	FONT-FAMILY: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helvetica, Sans-Serif;
+	FONT-SIZE: 8pt;
+	
+	FONT-WEIGHT: bolder;
+	TEXT-DECORATION: none;
+}
+.textbox {
+	WIDTH: 50px;
+}
+span.error {
+	font-size: 10pt;
+	font-weight: bold;
+	color: red;
+}
+.note{
+	COLOR: black;
+	FONT-WEIGHT: normal;
+	FONT-SIZE: 7.5pt;
+}
+.title{
+	COLOR: BLACK;
+	FONT-WEIGHT: normal;
+}
+
+.rightjust {
+	text-align: center;
+	
+}
+input.hrs{
+	font-size: 6pt;
+	text-align: left;
+}
+
+
