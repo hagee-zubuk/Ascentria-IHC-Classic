@@ -1,7 +1,7 @@
 <%language=vbscript%>
 <!-- #include file="_Files.asp" -->
-
 <!-- #include file="_Utils.asp" -->
+<!-- #include file="export_helper.asp" -->
 <%
 
 Server.ScriptTimeout = 360000
@@ -1697,93 +1697,94 @@ ElseIf Request("sql") = 9 Then
 		'Session("dload") = Z_DoEncrypt(ConPMTown)
 		Response.Redirect "extra2.asp"	
 	ElseIf Request("sql") = 30 Then
+		'Dim myDay(6), sundatex(1), rsHrs(6)', SearchArraysacode(1)
 		myDay(0) = "sun"
-			myDay(1) = "mon"
-			myDay(2) = "tue"
-			myDay(3) = "wed"
-			myDay(4) = "thu"
-			myDay(5) = "fri"
-			myDay(6) = "sat"
-			sundatex(0) = Request("closedate2")
-      sundatex(1) = DateAdd("d", 7, CDate(Request("closedate2")))
+		myDay(1) = "mon"
+		myDay(2) = "tue"
+		myDay(3) = "wed"
+		myDay(4) = "thu"
+		myDay(5) = "fri"
+		myDay(6) = "sat"
+		sundatex(0) = Request("closedate2")
+		sundatex(1) = DateAdd("d", 7, CDate(Request("closedate2")))
 		Set fso = CreateObject("Scripting.FileSystemObject")
 		strProcH = "Worker Last Name,Worker First Name,Consumer,Date,Hours,Activity"
 		Set rsTBL = Server.CreateObject("ADODB.RecordSet")
-			Set rsCli = Server.CreateObject("ADODB.RecordSet")
-			sqlTBL = "SELECT distinct emp_id, lname, fname FROM Tsheets_T, worker_T  WHERE emp_id = Social_Security_Number " & _
+		Set rsCli = Server.CreateObject("ADODB.RecordSet")
+		sqlTBL = "SELECT distinct emp_id, lname, fname FROM Tsheets_T, worker_T  WHERE emp_id = Social_Security_Number " & _
 				"AND date >= '" & CDate(Request("closedate2")) & "' AND date  <= '" & CDate(Request("todate2")) & "' ORDER BY lname, fname"
-			Session("Msg") = Session("Msg") & " from " & Request("closedate2")
-			Session("Msg") = Session("Msg") & " to " & Request("todate2")
-			Session("Msg") = Session("Msg") & ". "
-			rsTBL.Open sqlTBL, g_strCONN, 3, 1
-			Do Until rsTBL.EOF
-      	sqlcli = "SELECT DISTINCT client FROM TSheets_T WHERE emp_ID = '" & rsTBL("emp_ID") & "' " & _
-      		"AND date >= '" & CDate(Request("closedate2")) & "' AND date  <= '" & CDate(Request("todate2")) & "'" 
- 
-      	rsCli.Open sqlcli, g_strCONN, 3, 1
-      	Do Until rsCli.EOF
+		Session("Msg") = Session("Msg") & " from " & Request("closedate2")
+		Session("Msg") = Session("Msg") & " to " & Request("todate2")
+		Session("Msg") = Session("Msg") & ". "
+		rsTBL.Open sqlTBL, g_strCONN, 3, 1
+		Do Until rsTBL.EOF
+      		sqlcli = "SELECT DISTINCT client FROM TSheets_T WHERE emp_ID = '" & rsTBL("emp_ID") & "' " & _
+      				"AND date >= '" & CDate(Request("closedate2")) & "' AND date  <= '" & CDate(Request("todate2")) & "'" 
+ 		   	rsCli.Open sqlcli, g_strCONN, 3, 1
+      		Do Until rsCli.EOF
 	     		ctrs = 0
-      		Do Until ctrs = 2
-	      		For lngI = 0 To 6
-	      			sqlHrs = "SELECT emp_ID, " & myDay(lngI) & " AS [val], misc_notes, date FROM tsheets_T WHERE client = '" & rsCli("client") & "' " & _
-	      				"AND emp_ID= '" & rsTBL("emp_ID") & "' AND date = '" & CDate(sundatex(ctrs)) & "' and " & myDay(lngI) & " <> 0 ORDER BY timestamp"
-	      			Set rsHrs(lngI) = Server.CreateObject("ADODB.RecordSet")
-	      			rsHrs(lngI).Open sqlHrs, g_strCONN, 3, 1
-	      		Next
-	      		'x = 0
-	      		For lngI = 0 To 6
-		      		dayhrs = 0
-		      		'y = 0
-		      		x = 0
-		      		Do Until rsHrs(lngI).EOF
-		      			accode = Split(Trim(rsHrs(lngI)("misc_notes")), ",")
-		      			If UBound(accode) > 1 Then
-                	Exit Do
-                Else
-                  y = 0
-                  Do Until y = UBound(accode) + 1
-                  	If accode(y) <> "" Then
-	                  	lngIdx = SearchArraysacode(accode(y))
-	                    	If lngIdx < 0 Then
-	                      	ReDim Preserve myacode(x)
-	                        myacode(x) = accode(y)
-	                        x = x + 1
-	                      End If
-	                  End if
-                  	y = y + 1
-                	Loop
-                  dayhrs = dayhrs + rsHrs(lngi)("val")
-                End If
-                rsHrs(lngi).MoveNext
-							Loop
-							actcode = ""
-							If x = 1 And dayhrs > 1.25 Then
-							
-								myDate = Z_GetDate(sundatex(ctrs), myDay(lngI))
-								For ctr2 = 0 to Ubound(myacode) 
-									actcode = actcode & ACdesc(myacode(ctr2))
-								Next
-								
-								strProcB = strProcB & """" & GetNameWork(rsTBL("emp_id")) & """,""" & GetName2(rsCli("client")) & """,""" & myDate & _
-									""",""" & dayhrs & """,""" & actcode  & """" & vbCrLf
-							End If
-							ReDim myacode(0)
-						Next
+      			Do Until ctrs = 2
+	      			For lngI = 0 To 6
+	      				sqlHrs = "SELECT emp_ID, " & myDay(lngI) & " AS [val], misc_notes, date FROM tsheets_T " & _
+	      						"WHERE client = '" & rsCli("client") & "' " & _
+	      						"AND emp_ID= '" & rsTBL("emp_ID") & "' AND date = '" & CDate(sundatex(ctrs)) & "' " & _
+	      						"AND " & myDay(lngI) & " <> 0 ORDER BY timestamp"
+	      				Set rsHrs(lngI) = Server.CreateObject("ADODB.RecordSet")
+	      				rsHrs(lngI).Open sqlHrs, g_strCONN, 3, 1
+	      				'Response.Write "<code>" & sqlTbl & vbCrLf & sqlCli & vbCrLF & sqlHrs & "<code>" & vbCrLF
+	      			Next
+	      			'x = 0
+	      			For lngI = 0 To 6
+		      			dayhrs = 0
+		      			'y = 0
+		      			x = 0
+		      			Do Until rsHrs(lngI).EOF
+		      				accode = Split(Trim(rsHrs(lngI)("misc_notes")), ",")
+		      				If UBound(accode) > 1 Then
+                				Exit Do
+                			Else
+                  				y = 0
+                  				Do Until y = UBound(accode) + 1
+	                  				If accode(y) <> "" Then
+		                  				lngIdx = SearchArraysacode(accode(y))
+		                    			If lngIdx < 0 Then
+		                      				ReDim Preserve myacode(x)
+		                        			myacode(x) = accode(y)
+		                        			x = x + 1
+		                      			End If
+		                  			End if
+	                  				y = y + 1
+                				Loop
+                  				dayhrs = dayhrs + rsHrs(lngi)("val")
+                			End If
+                			rsHrs(lngi).MoveNext
+						Loop
+						actcode = ""
+						If x = 1 And dayhrs > 1.25 Then
+							myDate = Z_GetDate(sundatex(ctrs), myDay(lngI))
+							For ctr2 = 0 to Ubound(myacode) 
+								actcode = actcode & ACdesc(myacode(ctr2))
+							Next
+							strProcB = strProcB & """" & GetNameWork(rsTBL("emp_id")) & """,""" & GetName2(rsCli("client")) & _
+									""",""" & myDate & """,""" & dayhrs & """,""" & actcode  & """" & vbCrLf
+						End If
+						ReDim myacode(0)
+					Next
 						
-						For lngI = 0 To 6
-							rsHrs(lngI).Close
-							set rsHrs(lngi) = Nothing
-						next
-						ctrs = ctrs + 1
-					Loop
-      		rsCli.MoveNext
-      	Loop
-      	rsCli.Close
-				rsTBL.MoveNext
-			Loop
-			rsTBL.Close
-			Set rsCli = Nothing
-			Set rsTBL = Nothing	
+					For lngI = 0 To 6
+						rsHrs(lngI).Close
+						set rsHrs(lngi) = Nothing
+					Next
+					ctrs = ctrs + 1
+				Loop
+      			rsCli.MoveNext
+      		Loop
+      		rsCli.Close
+			rsTBL.MoveNext
+		Loop
+		rsTBL.Close
+		Set rsCli = Nothing
+		Set rsTBL = Nothing	
 		Set Prt = fso.CreateTextFile(insuf, True)
 		Prt.WriteLine strProcH
 		Prt.WriteLine strProcB
