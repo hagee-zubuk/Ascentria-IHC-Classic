@@ -5,11 +5,12 @@
 <!-- #include file="_security.asp" -->
 <%
 	Session("WID") = ""
-	response.write "<!--tmpFiles:" & Z_Dodecrypt(Session("WFiles")) & "-->"
+	response.write "<!--tmpFiles:" & Z_DoDecrypt(Session("WFiles")) & "-->"
 	myFin = ""
 	'If UCase(Session("lngType")) = "0" Then myFin = "READONLY"
 	If Session("WFiles") <> "" Then 
 		tmpWFiles = Split(Z_DoDecrypt(Session("WFiles")),"|")
+
 		SSN = tmpWFiles(0)
 		LN = tmpWFiles(1)
 		FN = tmpWFiles(2)
@@ -484,6 +485,7 @@
 		</form>
 	</body>
 </html>
-<%	Session("MSG") = "" 
+<%
+	Session("MSG") = "" 
 	Session("WFiles") = ""
 %>

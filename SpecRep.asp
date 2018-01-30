@@ -4874,8 +4874,10 @@ ElseIf Request("SelRep") = 67 Then 'newsletter
 			Next 
 		ElseIf Request("SelRep") = 77 Then 'Consumer worker distance
 			response.redirect "gmaps.asp?con=" & request("selcon") & " "
-		ElseIf Request("SelRep") = 78 Then 'insufficient activity
-					
+		ElseIf Request("SelRep") = 78 Then 'insufficient activity		
+' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////|
+' {={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={={=|
+' \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|
 			myDay(0) = "sun"
 			myDay(1) = "mon"
 			myDay(2) = "tue"
@@ -4884,94 +4886,107 @@ ElseIf Request("SelRep") = 67 Then 'newsletter
 			myDay(5) = "fri"
 			myDay(6) = "sat"
 			sundatex(0) = Request("closedate")
-      sundatex(1) = DateAdd("d", 7, CDate(Request("closedate")))
-      sundate = Request("closedate")
-      satdate = Request("todate")
+      		sundatex(1) = DateAdd("d", 7, CDate(Request("closedate")))
+      		sundate = Request("closedate")
+      		satdate = Request("todate")
 			Session("MSG") = "Insufficient Activity Report"
-			strHEAD = "<tr bgcolor='#040C8B'><td align='center'><font size='1' face='trebuchet ms' color='white'><b>Worker Name</b></font></td><td align='center'>" & _
-				"<font size='1' face='trebuchet ms' color='white'><b>Consumer Name</b></font></td><td align='center'><font size='1' " & _
-				"face='trebuchet ms' color='white'><b>Date</b></font></td><td align='center'><font size='1' " & _
-				"face='trebuchet ms' color='white'><b>Hours</b></font></td><td align='center'>" & _
-				"<font size='1' face='trebuchet ms' color='white'><b>Activity</b></font></td></tr>"
+			strHEAD = "<tr bgcolor='#040C8B'><td align='center'><font size='1' face='trebuchet ms' color='white'>" & _
+				"<b>Worker Name</b></font></td><td align='center'>" & _
+				"<font size='1' face='trebuchet ms' color='white'><b>Consumer Name</b></font></td>" & _
+				"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>Date</b></font></td>" & _
+				"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>Hours</b></font></td>" & _
+				"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>Activity</b></font></td></tr>"
 			Set rsTBL = Server.CreateObject("ADODB.RecordSet")
 			Set rsCli = Server.CreateObject("ADODB.RecordSet")
-			sqlTBL = "SELECT distinct emp_id, lname, fname FROM Tsheets_T, worker_T  WHERE emp_id = Social_Security_Number " & _
-				"AND date >= '" & CDate(Request("closedate")) & "' AND date  <= '" & CDate(Request("todate")) & "' ORDER BY lname, fname"
+			sqlTBL = "SELECT DISTINCT emp_id, lname, fname FROM Tsheets_T, worker_T " & _
+					"WHERE emp_id = Social_Security_Number AND date >= '" & CDate(Request("closedate")) & _
+					"' AND date  <= '" & CDate(Request("todate")) & "' ORDER BY lname, fname"
 			Session("Msg") = Session("Msg") & " from " & Request("closedate")
 			Session("Msg") = Session("Msg") & " to " & Request("todate")
 			Session("Msg") = Session("Msg") & ". "
 			rsTBL.Open sqlTBL, g_strCONN, 3, 1
 			Do Until rsTBL.EOF
-      	sqlcli = "SELECT DISTINCT client FROM TSheets_T WHERE emp_ID = '" & rsTBL("emp_ID") & "' " & _
-      		"AND date >= '" & CDate(Request("closedate")) & "' AND date  <= '" & CDate(Request("todate")) & "'" 
- 
-      	rsCli.Open sqlcli, g_strCONN, 3, 1
-      	Do Until rsCli.EOF
-	     		ctrs = 0
-      		Do Until ctrs = 2
-	      		For lngI = 0 To 6
-	      			sqlHrs = "SELECT emp_ID, " & myDay(lngI) & " AS [val], misc_notes, date FROM tsheets_T WHERE client = '" & rsCli("client") & "' " & _
-	      				"AND emp_ID= '" & rsTBL("emp_ID") & "' AND date = '" & CDate(sundatex(ctrs)) & "' and " & myDay(lngI) & " <> 0 ORDER BY timestamp"
-	      			Set rsHrs(lngI) = Server.CreateObject("ADODB.RecordSet")
-	      			rsHrs(lngI).Open sqlHrs, g_strCONN, 3, 1
-	      		Next
-	      		'x = 0
-	      		For lngI = 0 To 6
-		      		dayhrs = 0
-		      		'y = 0
-		      		x = 0
-		      		Do Until rsHrs(lngI).EOF
-		      			accode = Split(Trim(rsHrs(lngI)("misc_notes")), ",")
-		      			If UBound(accode) > 1 Then
-                	Exit Do
-                Else
-                  y = 0
-                  Do Until y = UBound(accode) + 1
-                  	If accode(y) <> "" Then
-	                  	lngIdx = SearchArraysacode(accode(y))
-	                    	If lngIdx < 0 Then
-	                      	ReDim Preserve myacode(x)
-	                        myacode(x) = accode(y)
-	                        x = x + 1
-	                      End If
-	                  End if
-                  	y = y + 1
-                	Loop
-                  dayhrs = dayhrs + rsHrs(lngi)("val")
-                End If
-                rsHrs(lngi).MoveNext
+      			sqlcli = "SELECT DISTINCT client FROM TSheets_T WHERE emp_ID = '" & rsTBL("emp_ID") & "' " & _
+      					"AND date >= '" & CDate(Request("closedate")) & "' AND date  <= '" & CDate(Request("todate")) & "'" 
+		      	rsCli.Open sqlcli, g_strCONN, 3, 1
+      			Do Until rsCli.EOF
+		     		ctrs = 0
+		      		Do Until ctrs = 2
+			      		For lngI = 0 To 6
+			      			sqlHrs = "SELECT emp_ID, " & myDay(lngI) & " AS [val], misc_notes, date FROM tsheets_T " & _
+			      					"WHERE client = '" & rsCli("client") & "' " & _
+			      					"AND emp_ID= '" & rsTBL("emp_ID") & "' AND date = '" & CDate(sundatex(ctrs)) & "' " & _
+			      					"AND " & myDay(lngI) & " <> 0 ORDER BY timestamp"
+			      			Set rsHrs(lngI) = Server.CreateObject("ADODB.RecordSet")
+			      			rsHrs(lngI).Open sqlHrs, g_strCONN, 3, 1
+			      		Next
+			      		For lngI = 0 To 6
+				      		dayhrs = 0
+				      		x = 0
+				      		Do Until rsHrs(lngI).EOF
+				      			Response.Write "<code>" & rsTBL("emp_ID") & "|" & rsCli("client") & "::" & _
+				      					Trim(rsHrs(lngI)("misc_notes"))
+				      			accode = Split(Trim(rsHrs(lngI)("misc_notes")), ",")
+				      			If UBound(accode) > 1 Then
+									Exit Do
+								Else
+									y = 0
+									Do Until y = UBound(accode) + 1
+										If accode(y) <> "" Then
+											lngIdx = SearchArraysacode(accode(y))
+											If lngIdx < 0 Then
+												ReDim Preserve myacode(x)
+												myacode(x) = accode(y)
+												x = x + 1
+											End If
+										End if
+										y = y + 1
+									Loop
+									dayhrs = dayhrs + rsHrs(lngi)("val")
+									' dayhrs gets the total for the sun, ..., sat fields
+									Response.Write " --> " & dayhrs	
+		                		End If
+		                		Response.Write "</code><br />" & vbCrLf
+		                		rsHrs(lngi).MoveNext
 							Loop
 							actcode = ""
+							strBODY = strBODY & "<tr><td align=""center""><font size=""1"" face=""trebuchet ms"">&nbsp;" & _
+									rsTBL("lname") & ",&nbsp;" & rsTBL("fname") & "&nbsp;</font></td>" & vbCrLf
 							If x = 1 And dayhrs > 1.25 Then
-							
 								myDate = Z_GetDate(sundatex(ctrs), myDay(lngI))
-								For ctr2 = 0 to Ubound(myacode) 
+								For ctr2 = 0 to Ubound(myacode)
 									actcode = actcode & ACdesc(myacode(ctr2))
 								Next
-								
-								strBODY = strBODY & "<td align='center'><font size='1' face='trebuchet ms' >&nbsp;" & GetName(rsTBL("emp_id")) & "&nbsp;</font></td>" & _
-								"<td align='center'><font size='1' face='trebuchet ms'>" & GetName2(rsCli("client")) & "</font></td>" & _
-								"<td align='center'><font size='1' face='trebuchet ms'>" & myDate & "</font></td>" & _
-								"<td align='center'><font size='1' face='trebuchet ms' >" & dayhrs & "</font></td>" & _
-								"<td align='center'><font size='1' face='trebuchet ms' >" & actcode & "</font></td></tr>"
+								'GetName(rsTBL("emp_id"))  and GetName2(rsCli("client"))
+								strBODY = strBODY & "<td align='center'><font size='1' face='trebuchet ms'>" & _
+										GetName2(rsCli("client")) & "</font></td>"
+								strBODY = strBODY & "<td align='center'><font size='1' face='trebuchet ms'>" & myDate & "</font></td>" & _
+										"<td align='center'><font size='1' face='trebuchet ms' >" & dayhrs & "</font></td>" & _
+										"<td align='center'><font size='1' face='trebuchet ms' >" & actcode & "</font></td></tr>" & vbCrLf
+							Else
+								strBODY = strBODY & "<td align=""center"">&nbsp;</td>" & _
+										"<td align=""center"">x=" & x & "</td>" & _
+										"<td align=""center"">dayHrs=" & dayhrs & "</td></tr>" & vbCrLf
 							End If
 							ReDim myacode(0)
 						Next
-						
 						For lngI = 0 To 6
 							rsHrs(lngI).Close
-							set rsHrs(lngi) = Nothing
-						next
+							Set rsHrs(lngi) = Nothing
+						Next
 						ctrs = ctrs + 1
 					Loop
-      		rsCli.MoveNext
-      	Loop
-      	rsCli.Close
+      				rsCli.MoveNext
+      			Loop
+      			rsCli.Close
 				rsTBL.MoveNext
 			Loop
 			rsTBL.Close
 			Set rsCli = Nothing
-			Set rsTBL = Nothing	
+			Set rsTBL = Nothing
+' \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|
+' =}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}=}|
+' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////|
 		ElseIf Request("SelRep") = 79 Then 'orient
 			Session("MSG") = "PCSP Worker Orientation"
 			strHEAD = "<tr bgcolor='#040C8B'><td align='center'><font size='1' face='trebuchet ms' color='white'><b>Name</b>" & _
