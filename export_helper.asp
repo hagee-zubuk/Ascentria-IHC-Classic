@@ -48,7 +48,7 @@ function ACdesc(xxx)
 End function
 
 Function SearchArraysacode(acode)
-On Error Resume Next
+	On Error Resume Next
 	SearchArraysacode = -1
 	lngMax = UBound(myacode)
 	If Err.Number <> 0 Then Exit Function

@@ -133,8 +133,8 @@
 		Set tblWork = Server.CreateObject("ADODB.RecordSet")
 		Set tblNme = Server.CreateObject("ADODB.RecordSet")
 		'response.write "ID: " & Session("Cidx")
-		sqlWork = "SELECT * FROM [ConWork_t] WHERE [CID] = '" & CID & "' " 
-		'response.write "SQL: " & sqlWork & "<br>"
+		sqlWork = "SELECT * FROM [ConWork_t] WHERE [CID] = '" & CID & "' AND [WID] IS NOT NULL" 
+		Response.Write vbCrlf & "<!-- SQL: " & sqlWork & " -->" & vbCrlf
 		tblWork.Open sqlWork, g_strCONN, 1, 3
 	'On Error Resume Next
 		If Not tblWork.EOF Then
@@ -149,6 +149,7 @@
 				tmpWID = tblWork("WID") 
 				sqlName = "SELECT [lname], [fname], [Social_Security_Number], [status], [Index] as myindex, address, state, city, zip FROM [Worker_t] WHERE Worker_t.[Index] = " & tmpWID
 				'response.write "<br>" & "sqlName: " & sqlName
+				Response.Write vbCrLf & "<!-- [" & sqlNAme & "] -->" & vbCrLf
 				tblNme.Open sqlName, g_strCONN, 1, 3
 				If Not tblNme.EOF Then
 					tmpName = tblNme("Lname") & ", " & tblNme("Fname")
@@ -178,8 +179,8 @@
 		Set tblWork = Server.CreateObject("ADODB.RecordSet")
 		Set tblNme = Server.CreateObject("ADODB.RecordSet")
 		'response.write "ID: " & Session("Cidx")
-		sqlWork = "SELECT * FROM [ConWorkBack_t] WHERE [CID] = '" & CID & "' " 
-		'response.write "SQL: " & sqlWork & "<br>"
+		sqlWork = "SELECT [WID], [ID] FROM [ConWorkBack_t] WHERE [CID] = '" & CID & "' AND [WID] IS NOT NULL" 
+		Response.Write vbCrLf & "<!-- SQL: " & sqlWork & " -->" & vbCrLf
 		tblWork.Open sqlWork, g_strCONN, 1, 3
 	'On Error Resume Next
 		If Not tblWork.EOF Then
@@ -191,23 +192,25 @@
 				else 
 					kulay = "#FFFFFF"
 				end if
-				tmpWID = tblWork("WID") 
-				sqlName = "SELECT Lname, Fname, Status, Social_Security_Number, [index]  FROM [Worker_t] WHERE [Index] = " & tmpWID
-				'response.write "<br>" & "SQL2: " & sqlName
-				tblNme.Open sqlName, g_strCONN, 1, 3
-				tmpName = tblNme("Lname") & ", " & tblNme("Fname")
-				strWorkback = strWorkback & "<tr bgcolor='" & kulay & "'><td align='center'><input type='checkbox' name='chkWBack" & ctrW & "' value='" & _
-						tblWork("ID") & "'><td><a href='A_Worker.asp?WID=" & _
-						tblNme("Social_Security_Number") & "'><font size='1' face='trebuchet MS'>&nbsp;" & Right(tblNme("Social_Security_Number"), 4) & _
-						"&nbsp;</font></a></td><td>"
-				If tblNme("Status")  = "InActive" Then		
-					strWorkback =strWorkbackstrWork & "<tr><td align='center'><font size='2'>&nbsp;*" & tmpName & "&nbsp;</font></td></tr>"
-				Else
-					strWorkback = strWorkback & "<tr><td align='center'><font size='2'>&nbsp;" & tmpName & "&nbsp;</font></td></tr>"
+				tmpWID = (tblWork("WID") )
+				If IsNumeric( tmpWID ) AND tmpWID > 0 Then 
+					sqlName = "SELECT Lname, Fname, Status, Social_Security_Number, [index]  FROM [Worker_t] WHERE [Index] = " & tmpWID
+					Response.Write vbCrLf & "<!-- SQL2: " & sqlName & " -->" & vbCrLf
+					tblNme.Open sqlName, g_strCONN, 1, 3
+					tmpName = tblNme("Lname") & ", " & tblNme("Fname")
+					strWorkback = strWorkback & "<tr bgcolor='" & kulay & "'><td align='center'><input type='checkbox' name='chkWBack" & ctrW & "' value='" & _
+							tblWork("ID") & "'><td><a href='A_Worker.asp?WID=" & _
+							tblNme("Social_Security_Number") & "'><font size='1' face='trebuchet MS'>&nbsp;" & Right(tblNme("Social_Security_Number"), 4) & _
+							"&nbsp;</font></a></td><td>"
+					If tblNme("Status")  = "InActive" Then		
+						strWorkback =strWorkbackstrWork & "<tr><td align='center'><font size='2'>&nbsp;*" & tmpName & "&nbsp;</font></td></tr>"
+					Else
+						strWorkback = strWorkback & "<tr><td align='center'><font size='2'>&nbsp;" & tmpName & "&nbsp;</font></td></tr>"
+					End If
+					tblNme.Close
+					tblWork.MoveNext
+					ctrWBack = ctrWBack + 1
 				End If
-				tblNme.Close
-				tblWork.MoveNext
-				ctrWBack = ctrWBack + 1
 			Loop
 		Else
 			strWorkback = "<tr><td align='center'><font size='2'>N/A</font></td></tr>"
@@ -356,7 +359,8 @@
 		If tblRCon.EOF Then
 			RLocked = ""
 			Do Until tblR2.EOF
-				strR2 = strR2 & "<option value='" & tblR2("Index")& "'> "& tblR2("Lname") & ", " & tblR2("Fname") & " </option>"
+				strR2 = strR2 & vbTab & vbTab & vbTab & "<option value=""" & tblR2("Index")& """>" & _
+						tblR2("Lname") & ", " & tblR2("Fname") & " </option>" & vbCrLf				
 				tblR2.MoveNext
 			loop
 		Else
@@ -374,7 +378,7 @@
 			PMname = rsPM("Lname") & ", " & rsPM("Fname")
 			SelPM = ""
 			If rsPM("ID") = PM Then SelPM = "SELECTED"
-			strPM = StrPM & "<option " & SelPM & " value='" & rsPM("ID") & "' >" & PMname & "</option>" 
+			strPM = StrPM & "<option " & SelPM & " value='" & rsPM("ID") & "' >" & PMname & "</option>" & vbCrLf
 			rsPM.MoveNext
 		Loop
 		rsPM.Close
@@ -421,15 +425,17 @@
 					If tblLWork("index") = Cint(tblChkCon("WID")) Then 
 						'response.write "SQL" & sqlChkCon & " TRUE" 
 						meron = 1
-					End If
-					
+					End If		
 					'response.write "SQL: " & sqlChkCon & " FALSE: " & tblLWork("index") & " <> " & tblChkCon("WID") & "<BR>"
 					tblChkCon.MoveNext
 				Loop
-				If meron <> 1 Then	strdeptback = strdeptback & "<option value='" & tblLWork("index")& "'> "& tblLWork("Lname") & ", " & tblLWork("fname") & " </option>"
+				If meron <> 1 Then	strdeptback = strdeptback & vbTab & vbTab & vbTab & vbTab & _
+						"<option value=""" & tblLWork("index")& """>" & tblLWork("Lname") & ", " & _
+						tblLWork("fname") & " </option>" & vbCrLf
 			Else
-				strdeptback = strdeptback & "<option value='" & tblLWork("index")& "'> "& tblLWork("Lname") & ", " & tblLWork("fname") & " </option>"  
-				'strdept = strdept & "<option value='" & tbldept("lname")& "'> "& tbldept("Lname") & ", " & tbldept("fname") & " </option>"  
+				strdeptback = strdeptback & vbTab & vbTab & vbTab & vbTab & _
+						"<option value='" & tblLWork("index")& "'>" & tblLWork("Lname") & ", " & _
+						tblLWork("fname") & "</option>" & vbCrLf
 			End If
 			tblLWork.Movenext
 		loop
@@ -443,7 +449,7 @@
 		Do Until rsPM.EOF
 			selcount = ""
 			if concounty = rsPM("uid") then selcount = "selected" 
-			strcount = strcount & "<option " &  selCount & " value='" & rsPM("uid") & "' >" & rsPM("county") & "</option>" 
+			strcount = strcount & "<option " &  selCount & " value='" & rsPM("uid") & "' >" & rsPM("county") & "</option>" & vbCrLf
 			rsPM.MoveNext
 		Loop
 		rsPM.Close
