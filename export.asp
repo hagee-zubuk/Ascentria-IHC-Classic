@@ -1828,14 +1828,14 @@ ElseIf Request("sql") = 9 Then
 		Response.Redirect "extra2.asp"			
 	ElseIf Request("sql") = 32 Then
 		Set fso = CreateObject("Scripting.FileSystemObject")
-		strProcH = "Last Name,First Name,Mailing Address,City,State,Zip,Phone,Mobile,Email,RIHCC1,RIHCC2"
+		strProcH = "Last Name,First Name,Mailing Address,City,State,Zip,Phone,Mobile,Email,RIHCC1,UltiPro"
 		Set rsTBL = Server.CreateObject("ADODB.RecordSet")
-		sqlTBL = "SELECT * FROM Worker_T WHERE status = 'Active' AND Driver = 1 ORDER BY lname, fname"
+		sqlTBL = "SELECT maddress, mcity, mstate, mzip, lname, fname, phoneno, cellno, email, pm1, COALESCE(ubadge, '') AS ubadge FROM Worker_T WHERE status = 'Active' AND Driver = 1 ORDER BY lname, fname"
 		rsTBL.Open sqlTBL, g_strCONN, 1, 3
 		Do Until rsTBL.EOF
 			strProcB = strProcB & """" & rsTBL("lname") & """,""" & rsTBL("fname") & """,""" & rsTBL("mAddress") & _
 						""",""" & rsTBL("mCity") & """,""" & rsTBL("mState") & """,""" & rsTBL("mZip") & """,""" & rsTBL("PhoneNo") & _
-						""",""" &	rsTBL("CellNo") & """,""" & rsTBL("eMail") & """,""" & GetName3(rsTBL("PM1")) & """,""" & GetName3(rsTBL("PM2")) & """" & vbCrLf
+						""",""" &	rsTBL("CellNo") & """,""" & rsTBL("eMail") & """,""" & GetName3(rsTBL("PM1")) & """,""" & rsTBL("ubadge") & """" & vbCrLf
 			rsTBL.MoveNext
 		Loop
 		rsTBL.Close
