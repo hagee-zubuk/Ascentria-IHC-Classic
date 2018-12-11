@@ -326,6 +326,7 @@ Function GetRate(tmpRdate, tmpRhrs, tmpDay)
 	'COMPUTE FOR UNIT
 	tmpUnit = tmpRhrs * 4
 	'COMPUTE FOR RATE
+	' Rate = tmpRhrs * 4 * tmpCurrRate 
 	GetRate = tmpUnit * tmpCurrRate
 End Function
 Function GetHoliday(tmpRdate, tmpRhrs, tmpDay)
@@ -678,24 +679,26 @@ Function Z_Pcode(xxx)
 	Set rsPcode = Nothing
 End Function
 ''''END FUNCTIONS
-	Session("PrintPrev") = ""
-	Session("PrintPrevRep") = ""
-	Session("PrintPrevPRoc") = ""
-	If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
-		server.scripttimeout = 600000 '10mins
-		PDate = Date
-		markerX = 0
-		If Request("Payd8") <> "" Then 
-			If IsDate(Request("Payd8")) Then
-				Pdate = Request("Payd8")
-			Else
-				Session("MSG") = "Enter valid date."
-				Response.Redirect = "Process.asp"
-			End If
-		End If 
-		
-		difwk = DateDiff("ww", wk1, PDate)
-		myDATE = PDate
+
+
+Session("PrintPrev") = ""
+Session("PrintPrevRep") = ""
+Session("PrintPrevPRoc") = ""
+If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
+	Server.ScriptTimeout = 600000 '10mins
+	PDate = Date
+	markerX = 0
+	If Request("Payd8") <> "" Then 
+		If IsDate(Request("Payd8")) Then
+			Pdate = Request("Payd8")
+		Else
+			Session("MSG") = "Enter valid date."
+			Response.Redirect = "Process.asp"
+		End If
+	End If 
+
+	difwk = DateDiff("ww", wk1, PDate)
+	myDATE = PDate
     If difwk >= 0 Then
         wknum = difwk + 1
         If Z_IsOdd2(wknum) Then
@@ -741,17 +744,17 @@ End Function
     End If
 			
 		Set rsProc = Server.CreateObject("ADODB.RecordSet")
-		sqlProc = "SELECT * FROM [Tsheets_t]"
+		sqlProc = "SELECT * FROM [Tsheets_t] AS t"
 		If Request("type") = 1 Then
 			sqlProc = sqlProc & ", worker_t  WHERE emp_id = social_security_number "
 		ElseIf Request("type") = 2 Then
-			sqlProc = sqlProc & ", consumer_t  WHERE client = medicaid_number AND code = 'M' "
+			sqlProc = sqlProc & " INNER JOIN [consumer_t] AS c ON t.[client] = c.[Medicaid_Number] WHERE c.code = 'M' "
 		ElseIf Request("type") = 3 Then
 			sqlProc = sqlProc & ", consumer_t  WHERE client = medicaid_number AND (code = 'P' OR code = 'C' OR code = 'A') "
 		ElseIf Request("type") = 4 Then
 			sqlProc = sqlProc & ", consumer_t  WHERE client = medicaid_number AND code = 'V' "
 		End If
-		sqlProc = sqlProc & "AND date <= '" & satDATE & "' AND date >= '" & sunDATE & "' AND" 
+		sqlProc = sqlProc & "AND t.[date] <= '" & satDATE & "' AND t.[date] >= '" & sunDATE & "' AND" 
 		mySunDate = sunDATE
 		If Request("type") = 1 Then
 			sqlProc = sqlProc & " ProcPay IS NULL ORDER BY lname, fname, date"
@@ -768,7 +771,8 @@ End Function
 		
 		'FOR EXPORT
 		Session("sqlVar") = Z_DoEncrypt(Pdate & "|" & Request("type") & "|" & sqlProc)
-		'response.write sqlproc
+		Response.Write sqlProc
+		Response.End
 		rsProc.Open sqlProc, g_strCONN, 1, 3
 		If Not rsProc.EOF Then
 			markerX = 1
@@ -818,8 +822,9 @@ End Function
 				If Request("type") = 2 Then	'medicaid
 					'LOOK FOR PREVIOUS ITEMS - ADDITONAL HRS
 					Set rsEx = Server.CreateObject("ADODB.RecordSet")
-					sqlEx = "SELECT * FROM Tsheets_T WHERE client = '" & rsProc("client") & "' AND emp_id = '" & rsProc("emp_id") & _
-						"' AND date =  '" & rsProc("date") & "' AND EXT = 0 AND NOT ProcMed IS NULL ORDER BY Date, timestamp"
+					sqlEx = "SELECT [max], [mon], [tue], [wed], [thu], [fri], [sat], [sun], [date], [client] " & _
+							"FROM Tsheets_T WHERE client = '" & rsProc("client") & "' AND emp_id = '" & rsProc("emp_id") & _
+							"' AND date =  '" & rsProc("date") & "' AND EXT = 0 AND NOT ProcMed IS NULL ORDER BY Date, timestamp"
 					rsEx.Open sqlEx, g_strCONN, 3, 1
 					If Not rsEx.EOF Then
 						Do Until rsEx.EOF
@@ -870,7 +875,7 @@ End Function
 						Rsat = GetRate(rsProc("date"), rsProc("sat"), "SAT")
 						Rsun = GetRate(rsProc("date"), rsProc("sun"), "SUN")
 						RAmount = Rmon + Rtue + Rwed + Rthur + Rfri + Rsat + Rsun '+ tmpMileAmt
-					  RF = "#000000"
+						RF = "#000000"
 						If rsProc("MAX") = True Then RF = "Red"
 						'MC = ""
 						'If rsProc("milecap") = True Then MC = "**"
@@ -2462,24 +2467,26 @@ End Function
 		Set fso = CreateObject("Scripting.FileSystemObject")
 		a = 1
 		tmpdate = replace(date, "/", "")
-		ProcCSV = "C:\Work\lss-dbvortex\export\ProcItem" & tmpdate & ".csv"
-		BillCSV = "C:\Work\lss-dbvortex\export\BillItem" & tmpdate & ".csv"
+		tmpFolder = "C:\WORK\ascentria\ihc\export"		' was: C:\Work\lss-dbvortex\export
+
+		ProcCSV = tmpFolder & "\ProcItem" & tmpdate & ".csv"
+		BillCSV = tmpFolder & "\BillItem" & tmpdate & ".csv"
 		if fso.FileExists(ProcCSV) THen
 			Do
-				if fso.FileExists("C:\Work\lss-dbvortex\export\ProcItem" & tmpdate & "-" & a & ".csv") Then
+				if fso.FileExists(tmpFolder & "\ProcItem" & tmpdate & "-" & a & ".csv") Then
 					a = a + 1
 				Else
-					ProcCSV = "C:\Work\lss-dbvortex\export\ProcItem" & tmpdate & "-" & a & ".csv"
+					ProcCSV = tmpFolder & "\ProcItem" & tmpdate & "-" & a & ".csv"
 					Exit Do
 				End If
 			Loop		 
 		End If
 		if fso.FileExists(BillCSV) THen
 			Do
-				if fso.FileExists("C:\Work\lss-dbvortex\export\BillItem" & tmpdate & "-" & a & ".csv") Then
+				if fso.FileExists(tmpFolder & "\BillItem" & tmpdate & "-" & a & ".csv") Then
 					a = a + 1
 				Else
-					BillCSV = "C:\Work\lss-dbvortex\export\BillItem" & tmpdate & "-" & a & ".csv"
+					BillCSV = tmpFolder & "\BillItem" & tmpdate & "-" & a & ".csv"
 					Exit Do
 				End If
 			Loop		 

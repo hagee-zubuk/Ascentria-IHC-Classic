@@ -1618,35 +1618,47 @@
 				rsProc.Close
 				Set rsProc = Nothing 	
 			ElseIf Request("SelRep") = 29 Then 
-				Session("MSG") = "Active Consumer Start and Ammendment Expiration Date report"
+				Session("MSG") = "Active Consumer Start and Amendment Expiration Date report"
 				strHEAD = "<tr bgcolor='#040C8B'><td align='center'><font size='1' face='trebuchet ms' color='white'><b>Consumer Name</b>" & _
 						"</font></td><td align='center'><font size='1' face='trebuchet ms' color='white'><b>Start Date</b></font></td>" & _
-						"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>Ammendment Expiration Date</b></font></td>" & _
+						"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>Amendment Effective Date</b></font></td>" & _
+						"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>Amendment Expiration Date</b></font></td>" & _
 						"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>RIHCC</b></font></td></tr>"
 				Set rsTBL = Server.CreateObject("ADODB.RecordSet")
-				sqlTBL = "SELECT * FROM consumer_t, c_status_t WHERE consumer_t.medicaid_number = c_status_t.medicaid_number AND Active = 1"
+				sqlTBL = "SELECT cmr.[Lname], cmr.[Fname], cmr.[Start_Date], cmr.[End_Date], cmr.[EffDate], cmr.[PMID]" & _
+						", pmn.[Lname] AS pm_lname, pmn.[Fname] AS pm_fname " & _
+						"FROM [consumer_t] AS cmr " & _
+						"INNER JOIN [c_status_t] AS sta ON cmr.[Medicaid_Number] = sta.[Medicaid_Number] " & _
+						"LEFT JOIN [Proj_Man_T] AS pmn ON cmr.[PMID]=pmn.[ID] " & _
+						"WHERE sta.[Active] = 1 "
 				If Request("FrmD8") <> "" Then
 					If IsDate(Request("FrmD8")) Then
-						sqlTBL = sqlTBL & " AND End_Date >= '" & Request("FrmD8") & "' " 
+						sqlTBL = sqlTBL & " AND cmr.[End_Date] >= '" & Request("FrmD8") & "' " 
 						Session("Msg") = Session("Msg") & " from " & Request("FrmD8")
 					End If
 				End If
 				If Request("ToD8") <> "" Then
 					If IsDate(Request("ToD8")) Then
-						sqlTBL = sqlTBL & " AND End_Date <= '" & Request("ToD8") & "' " 
+						sqlTBL = sqlTBL & " AND cmr.[End_Date] <= '" & Request("ToD8") & "' " 
 						Session("Msg") = Session("Msg") & " to " & Request("ToD8")
 					End If
 				End If
-				sqlTBL  = sqlTBL  & " ORDER BY lname, fname"
+				sqlTBL  = sqlTBL  & " ORDER BY cmr.[lname], cmr.[fname]"
 				Session("Msg") = Session("Msg") & ". " 
 				'response.write sqlTBL
 				rsTBL.Open sqlTBL, g_strCONN, 1, 3
 				Do Until rsTBL.EOF	
 					strBODY = strBODY & "<tr><td align='center'><font size='1' face='trebuchet ms'>" & _
-						rsTBL("lname") & ", " & rsTBL("fname") &"</font></td><td align='center'><font size='1' face='trebuchet ms'>&nbsp;" & rsTBL("Start_date") & _
+						rsTBL("lname") & ", " & rsTBL("fname") & _
 						"</font></td><td align='center'><font size='1' face='trebuchet ms'>&nbsp;" & _
-						rsTBL("End_Date") &  "</font></td><td align='center'><font size='1' face='trebuchet ms'>&nbsp;" & _
-						GetPM(rsTBL("PMID")) &  "</font></td></tr>"
+						rsTBL("Start_date") & _
+						"</font></td><td align='center'><font size='1' face='trebuchet ms'>&nbsp;" & _
+						rsTBL("EffDate") &  _ 
+						"</font></td><td align='center'><font size='1' face='trebuchet ms'>&nbsp;" & _
+						rsTBL("End_Date") &  _ 
+						"</font></td><td align='center'><font size='1' face='trebuchet ms'>&nbsp;" & _
+						Z_FixNull(rsTBL("pm_lname")) & ", " & Z_FixNull(rsTBL("pm_fname")) & _
+						"</font></td></tr>" & vbCrLf
 					rsTBL.MoveNext
 				Loop
 				rsTBL.Close
@@ -3319,11 +3331,10 @@
 					"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>Mobile</b></font></td>" & _
 					"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>Email</b></font></td>" & _
 					"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>RIHCC 1</b></font></td>" & _
-					"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>UltiPro ID</b></font></td></tr>"
+					"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>RIHCC 2</b></font></td></tr>"
 					
 				Set rsTBL = Server.CreateObject("ADODB.RecordSet")	
-				sqlTBL = "SELECT maddress, mcity, mstate, mzip, lname, fname, phoneno, cellno, email, pm1, COALESCE(ubadge, '') AS ubadge" & _
-						" FROM Worker_T WHERE status = 'Active' AND Driver = 1 ORDER BY lname, fname"
+				sqlTBL = "SELECT * FROM Worker_T WHERE status = 'Active' AND Driver = 1 ORDER BY lname, fname"
 				rsTBL.Open sqlTBL, g_strCONN, 1,3 
 				If Not rsTBL.EOF Then
 					Do Until rsTBL.EOF
@@ -3335,7 +3346,7 @@
 						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & rsTBL("CellNo") & _
 						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & rsTBL("eMail") & _
 						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & GetName3(rsTBL("pm1")) & _
-						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & rsTBL("ubadge") & _
+						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & GetName3(rsTBL("pm2")) & _
 						"</font></td></tr>"
 						rsTBL.MoveNext
 					Loop
@@ -3751,20 +3762,7 @@
 				End If
 			ElseIf Request("SelRep") = 61 Then
 				Session("MSG") = "Consumers with PCSP report"
-				sqlProc = "SELECT [lname], [fname], [medicaid_number], [maxHrs] FROM Consumer_T , c_Status_T " & _
-						"WHERE Consumer_T.Medicaid_Number = c_Status_T.Medicaid_Number " & _
-						"AND Active = 1 " & _
-						"ORDER BY lname, fname"
-				sqlProc = "SELECT c.[lname], c.[fname]" & _
-						", c.[medicaid_number]" & _
-						", [pmid]" & _
-						", [maxHrs]" & _
-						", p.[lname] + ', ' + p.[fname] AS proj_man " & _
-						"FROM [Consumer_T] AS c " & _
-						"INNER JOIN [c_Status_T] AS s ON c.[Medicaid_Number]=s.[Medicaid_Number] " & _
-						"LEFT JOIN [Proj_Man_T] AS p ON c.[pmid]=p.[ID] " & _
-						"WHERE Active = 1 " & _
-						"ORDER BY lname, fname"
+				sqlProc = "SELECT * FROM Consumer_T , c_Status_T WHERE Consumer_T.Medicaid_Number = c_Status_T.Medicaid_Number AND Active = 1 ORDER BY lname, fname"
 				strHEAD = "<tr bgcolor='#040C8B'><td align='center'><font size='1' face='trebuchet ms' color='white'><b>Consumer</b></font></td>" & _
 						"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>RIHCC</b></font></td><td align='center'><font size='1' " & _
 						"face='trebuchet ms' color='white'><b>Max Hours</b></font></td><td align='center'><font size='1' " & _
@@ -3773,7 +3771,7 @@
 				rsProc.Open sqlProc, g_strCONN, 3, 1
 				Do Until rsProc.EOF
 					tmpname = rsProc("lname") & ", " & rsProc("fname")
-					tmpRCC = rsProc("proj_man") ' GetAPM2(rsProc("medicaid_number"))
+					tmpRCC = GetAPM2(rsProc("medicaid_number"))
 					
 					strBODY = strBODY & "<tr><td align='center'><font size='1' face='trebuchet ms'>" & tmpName & _
 								"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & tmpRCC & _
@@ -3783,11 +3781,6 @@
 					'GET WORKERS
 					Set rsWork = Server.CreateObject("ADODB.RecordSet")
 					sqlwork = "SELECT * FROM Conwork_T WHERE CID = '" & rsProc("medicaid_number") & "'"
-					sqlwork = "SELECT c.WID" & _
-							", w.[lname] + ', ' + w.[fname] AS [workername] " & _
-							"FROM Conwork_T AS c " & _
-							"INNER JOIN Worker_T AS w ON c.WID = w.[index] " & _
-							"WHERE c.CID = '" & rsProc("medicaid_number") & "'"
 					rsWork.Open sqlwork, g_strCONN, 3, 1
 					Do Until rsWork.EOF
 						strBODY = strBODY & "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td align='center'><font size='1' face='trebuchet ms'>" & GetWorkName(rsWork("WID")) & "</font></td></tr>"
@@ -5656,7 +5649,7 @@ ElseIf Request("SelRep") = 67 Then 'newsletter
 							<option value='41' <%=Sel41%>>Consumer Logs</option>
 							<!--<option value='54' <%=Sel54%>>Consumer Mileage Cap</option>//-->
 							<option value='45' <%=Sel45%>>Consumer On Hold</option>
-							<option value='29' <%=Sel29%>>Consumer Start and Ammendment Expiration Date</option>
+							<option value='29' <%=Sel29%>>Consumer Start and Amendment Expiration Date</option>
 							<option value='40' <%=Sel40%>>Consumer Start and Inactive Date</option>
 							<option value='81' <%=Sel81%>>Consumer with Hours after Ammendment Expiration Date</option>
 							<option value='46' <%=Sel46%>>Consumer with No PCSP Worker</option>
