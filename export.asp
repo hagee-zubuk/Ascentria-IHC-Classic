@@ -1396,16 +1396,32 @@ ElseIf Request("sql") = 9 Then
 		strProcH = "Last Name,First Name,RIHCC Last Name, RIHCC First Name, Max Hours, PCSP Worker Last Name, PCSP Worker First Name"
 		Set rsTBL = CreateObject("ADODB.RecordSet")
 		sqlTBL = "SELECT * FROM Consumer_T , c_Status_T WHERE Consumer_T.Medicaid_Number = c_Status_T.Medicaid_Number AND Active = 1 ORDER BY lname, fname"
+		sqlTBL = "SELECT c.[lname], c.[fname]" & _
+						", c.[medicaid_number]" & _
+						", [pmid]" & _
+						", [maxHrs]" & _
+						", p.[lname] + ', ' + p.[fname] AS proj_man " & _
+						"FROM [Consumer_T] AS c " & _
+						"INNER JOIN [c_Status_T] AS s ON c.[Medicaid_Number]=s.[Medicaid_Number] " & _
+						"LEFT JOIN [Proj_Man_T] AS p ON c.[pmid]=p.[ID] " & _
+						"WHERE Active = 1 " & _
+						"ORDER BY lname, fname"
 		rsTBL.Open sqlTBL, g_strCONN, 1, 3
 		Do Until rsTBL.EOF
-			strProcB = strProcB & """" & rsTBL("lname") & """,""" & rsTBL("fname") & """,""" & GetCM(rsTBL("PMID")) & """,""" & rsTBL("maxhrs") & _
+			strProcB = strProcB & """" & rsTBL("lname") & """,""" & rsTBL("fname") & """,""" & rsTBL("proj_man") & """,""" & rsTBL("maxhrs") & _
 				""",""" & "" & """" & vbCrLf
 			'GET WORKERS
 			Set rsWork = Server.CreateObject("ADODB.RecordSet")
 			sqlwork = "SELECT * FROM Conwork_T WHERE CID = '" & rsTBL("medicaid_number") & "'"
+			sqlwork = "SELECT  w.[lname]" & _
+							", w.[fname]" & _
+							", w.[lname] + ', ' + w.[fname] AS [workername] " & _
+							"FROM Conwork_T AS c " & _
+							"INNER JOIN Worker_T AS w ON c.WID = w.[index] " & _
+							"WHERE c.CID = '" & rsTBL("medicaid_number") & "'"
 			rsWork.Open sqlwork, g_strCONN, 3, 1
 			Do Until rsWork.EOF
-				strProcB = strProcB & """" & "" & """,""" & "" & """,""" & "" & """,""" & "" & """,""" & "" & """,""" & GetWorkName(rsWork("WID")) & """" & vbCrLf
+				strProcB = strProcB & """" & "" & """,""" & "" & """,""" & "" & """,""" & "" & """,""" & "" & """,""" & rsWork("lname") & """,""" & rsWork("fname") & """" &  vbCrLf
 				rsWork.MoveNext
 			Loop
 			rsWork.Close
