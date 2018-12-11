@@ -3331,10 +3331,20 @@
 					"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>Mobile</b></font></td>" & _
 					"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>Email</b></font></td>" & _
 					"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>RIHCC 1</b></font></td>" & _
-					"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>RIHCC 2</b></font></td></tr>"
-					
+					"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>RIHCC 2</b></font></td>" & _
+					"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>UltiPro ID</b></font></td></tr>"
 				Set rsTBL = Server.CreateObject("ADODB.RecordSet")	
 				sqlTBL = "SELECT * FROM Worker_T WHERE status = 'Active' AND Driver = 1 ORDER BY lname, fname"
+				sqlTBL = "SELECT wkr.[maddress], wkr.[mcity], wkr.[mstate], wkr.[mzip], COALESCE(wkr.[ubadge], '') AS ubadge" & _
+						", wkr.[lname], wkr.[fname], wkr.[phoneno], wkr.[cellno], wkr.[email]" & _
+						", CASE wkr.[pm1] WHEN 0 THEN '' ELSE mn1.[Lname] + ', ' + mn1.[Fname] END AS pm1_name" & _
+						", CASE wkr.[pm2] WHEN 0 THEN '' ELSE mn2.[Lname] + ', ' + mn2.[Fname] END AS pm2_name" & _
+						" FROM Worker_T AS wkr " & _
+						"LEFT JOIN [Proj_Man_T] AS mn1 ON wkr.[pm1]=mn1.[id] " & _
+						"LEFT JOIN [Proj_Man_T] AS mn2 ON wkr.[pm2]=mn2.[id] " & _
+						"WHERE wkr.[status] = 'Active' AND wkr.[Driver] = 1 " & _
+						"ORDER BY wkr.[lname], wkr.[fname]"
+
 				rsTBL.Open sqlTBL, g_strCONN, 1,3 
 				If Not rsTBL.EOF Then
 					Do Until rsTBL.EOF
@@ -3345,8 +3355,9 @@
 						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & rsTBL("PhoneNo") & _
 						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & rsTBL("CellNo") & _
 						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & rsTBL("eMail") & _
-						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & GetName3(rsTBL("pm1")) & _
-						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & GetName3(rsTBL("pm2")) & _
+						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & rsTBL("pm1_name") & _
+						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & rsTBL("pm2_name") & _
+						"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & rsTBL("ubadge") & _						
 						"</font></td></tr>"
 						rsTBL.MoveNext
 					Loop

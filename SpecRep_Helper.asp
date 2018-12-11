@@ -41,19 +41,23 @@
 			ACValue = tmpAC
 			Set rsAC = Nothing
 		End function
-		function ACdesc(xxx)
-			If xxx = "" Then exit function
-			
-			Set rsAC = Server.CreateObject("ADODB.RecordSet")
-			sqlAC = "SELECT [desc] FROM activity_T WHERE code = " & xxx'strAC(ctr)
-			rsAC.Open sqlAC, g_strCONN, 3, 1
-			If Not rsAC.EOF Then
-				ACdesc = rsAC("desc") 
-				'response.write "Xxx: " & xxx & " = " & rsAC("desc")  & "<br>"
-			End If
-			rsAC.Close
-			Set rsAC = Nothing
-		End function
+Function ACdesc(xxx)
+	If xxx = "" Then exit function
+	val = Z_CLng(xxx)
+	If (val > 0) Then
+		Set rsAC = Server.CreateObject("ADODB.RecordSet")
+		sqlAC = "SELECT [desc] FROM activity_T WHERE code = " & xxx'strAC(ctr)
+		rsAC.Open sqlAC, g_strCONN, 3, 1
+		If Not rsAC.EOF Then
+			ACdesc = rsAC("desc") 
+			'response.write "Xxx: " & xxx & " = " & rsAC("desc")  & "<br>"
+		End If
+		rsAC.Close
+		Set rsAC = Nothing
+	Else
+		ACdesc = xxx
+	End If
+End function
 Function SearchArraysacode(acode)
 	On Error Resume Next
 	SearchArraysacode = -1
