@@ -59,7 +59,7 @@ ElseIf Request("sql") = 1 Then
 					Tfri = 0
 					Tsat = 0
 					Tsun = 0
-					If tmpID2 <> "" Then 
+					If Z_FixNull(tmpID2) <> "" Then 
 						Set tblname = Server.CreateObject("ADODB.RecordSet")
 						sqlName = "SELECT * FROM Worker_t"
 						tblname.Open sqlName, g_strCONN, 1, 3
@@ -1395,33 +1395,29 @@ ElseIf Request("sql") = 9 Then
 		Set fso = CreateObject("Scripting.FileSystemObject")
 		strProcH = "Last Name,First Name,RIHCC Last Name, RIHCC First Name, Max Hours, PCSP Worker Last Name, PCSP Worker First Name"
 		Set rsTBL = CreateObject("ADODB.RecordSet")
-		sqlTBL = "SELECT * FROM Consumer_T , c_Status_T WHERE Consumer_T.Medicaid_Number = c_Status_T.Medicaid_Number AND Active = 1 ORDER BY lname, fname"
-		sqlTBL = "SELECT c.[lname], c.[fname]" & _
-						", c.[medicaid_number]" & _
-						", [pmid]" & _
-						", [maxHrs]" & _
-						", p.[lname] + ', ' + p.[fname] AS proj_man " & _
-						"FROM [Consumer_T] AS c " & _
-						"INNER JOIN [c_Status_T] AS s ON c.[Medicaid_Number]=s.[Medicaid_Number] " & _
-						"LEFT JOIN [Proj_Man_T] AS p ON c.[pmid]=p.[ID] " & _
-						"WHERE Active = 1 " & _
-						"ORDER BY lname, fname"
+		sqlTBL = "SELECT c.[Index], c.[Medicaid_Number], COALESCE(c.[Lname], '') AS [lname], COALESCE(c.[Fname], '')  AS [fname]" & _
+						", c.[PMID], COALESCE(p.[lname],'') AS [rlname], COALESCE(p.[fname], '') AS [rfname], c.[MaxHrs] " & _
+						"FROM Consumer_T AS c " & _
+						"INNER JOIN [c_Status_T] AS s ON c.Medicaid_Number=s.Medicaid_Number " & _
+						"LEFT JOIN [Proj_Man_T] AS p ON c.[PMID]=p.[id] " & _
+						"WHERE s.[Active] = 1 " & _
+						"ORDER BY c.[lname], c.[fname]"
 		rsTBL.Open sqlTBL, g_strCONN, 1, 3
 		Do Until rsTBL.EOF
-			strProcB = strProcB & """" & rsTBL("lname") & """,""" & rsTBL("fname") & """,""" & rsTBL("proj_man") & """,""" & rsTBL("maxhrs") & _
-				""",""" & "" & """" & vbCrLf
+			strProcB = strProcB & """" & rsTBL("lname") & """,""" & rsTBL("fname") & """,""" & _
+					rsTBL("rlname") & """,""" & rsTBL("rfname") & """,""" & rsTBL("maxhrs") & """,""" & "" & """" & vbCrLf
 			'GET WORKERS
 			Set rsWork = Server.CreateObject("ADODB.RecordSet")
-			sqlwork = "SELECT * FROM Conwork_T WHERE CID = '" & rsTBL("medicaid_number") & "'"
-			sqlwork = "SELECT  w.[lname]" & _
-							", w.[fname]" & _
-							", w.[lname] + ', ' + w.[fname] AS [workername] " & _
-							"FROM Conwork_T AS c " & _
-							"INNER JOIN Worker_T AS w ON c.WID = w.[index] " & _
-							"WHERE c.CID = '" & rsTBL("medicaid_number") & "'"
+			sqlwork ="SELECT w.[CID], w.[WID], COALESCE(r.[Lname], '')  AS [wlname], COALESCE(r.[Fname], '') AS [wfname] " & _
+							"FROM [Conwork_T] AS w "  & _
+							"LEFT JOIN [worker_T] AS r ON w.[WID]=r.[index] " & _
+							"WHERE w.[CID]='" & rsTBL("Medicaid_Number") & "' " & _
+							"ORDER BY r.[lname], r.[fname]"
 			rsWork.Open sqlwork, g_strCONN, 3, 1
 			Do Until rsWork.EOF
-				strProcB = strProcB & """" & "" & """,""" & "" & """,""" & "" & """,""" & "" & """,""" & "" & """,""" & rsWork("lname") & """,""" & rsWork("fname") & """" &  vbCrLf
+				If (Z_FixNull(rsWork("WID"))<>"") Then
+					strProcB = strProcB & """"","""","""","""","""",""" & (rsWork("wlname")) & """,""" & (rsWork("wfname")) & """" & vbCrLf
+				End If
 				rsWork.MoveNext
 			Loop
 			rsWork.Close

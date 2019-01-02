@@ -3773,7 +3773,13 @@
 				End If
 			ElseIf Request("SelRep") = 61 Then
 				Session("MSG") = "Consumers with PCSP report"
-				sqlProc = "SELECT * FROM Consumer_T , c_Status_T WHERE Consumer_T.Medicaid_Number = c_Status_T.Medicaid_Number AND Active = 1 ORDER BY lname, fname"
+				sqlProc = "SELECT c.[Index], c.[Medicaid_Number], COALESCE(c.[Lname], '') + ', ' + COALESCE(c.[Fname], '')  AS [consumer]" & _
+						", c.[PMID], COALESCE(p.[lname],'') + ', ' + COALESCE(p.[fname], '') AS [rihcc], c.[MaxHrs] " & _
+						"FROM Consumer_T AS c " & _
+						"INNER JOIN [c_Status_T] AS s ON c.Medicaid_Number=s.Medicaid_Number " & _
+						"LEFT JOIN [Proj_Man_T] AS p ON c.[PMID]=p.[id] " & _
+						"WHERE s.[Active] = 1 " & _
+						"ORDER BY c.[lname], c.[fname]"
 				strHEAD = "<tr bgcolor='#040C8B'><td align='center'><font size='1' face='trebuchet ms' color='white'><b>Consumer</b></font></td>" & _
 						"<td align='center'><font size='1' face='trebuchet ms' color='white'><b>RIHCC</b></font></td><td align='center'><font size='1' " & _
 						"face='trebuchet ms' color='white'><b>Max Hours</b></font></td><td align='center'><font size='1' " & _
@@ -3781,8 +3787,8 @@
 				Set rsProc = Server.CreateObject("ADODB.RecordSet")	
 				rsProc.Open sqlProc, g_strCONN, 3, 1
 				Do Until rsProc.EOF
-					tmpname = rsProc("lname") & ", " & rsProc("fname")
-					tmpRCC = GetAPM2(rsProc("medicaid_number"))
+					tmpname = rsProc("consumer")
+					tmpRCC 	= rsProc("rihcc")
 					
 					strBODY = strBODY & "<tr><td align='center'><font size='1' face='trebuchet ms'>" & tmpName & _
 								"</font></td><td align='center'><font size='1' face='trebuchet ms'>" & tmpRCC & _
@@ -3790,11 +3796,17 @@
 								"</font></td><td align='center'><font size='1' face='trebuchet ms'>------</font></td></tr>"
 								
 					'GET WORKERS
+					sqlWork = "SELECT w.[CID], w.[WID], COALESCE(r.[Lname], '') + ', ' + COALESCE(r.[Fname], '') AS [worker] " & _
+							"FROM [Conwork_T] AS w "  & _
+							"LEFT JOIN [worker_T] AS r ON w.[WID]=r.[index] " & _
+							"WHERE w.[CID]='" & rsProc("Medicaid_Number") & "' " & _
+							"ORDER BY r.[lname], r.[fname]"
 					Set rsWork = Server.CreateObject("ADODB.RecordSet")
-					sqlwork = "SELECT * FROM Conwork_T WHERE CID = '" & rsProc("medicaid_number") & "'"
 					rsWork.Open sqlwork, g_strCONN, 3, 1
 					Do Until rsWork.EOF
-						strBODY = strBODY & "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td align='center'><font size='1' face='trebuchet ms'>" & GetWorkName(rsWork("WID")) & "</font></td></tr>"
+						If (Z_FixNull(rsWork("WID"))<>"") Then
+							strBODY = strBODY & "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td align='center'><font size='1' face='trebuchet ms'>" & GetWorkName(rsWork("WID")) & "</font></td></tr>"
+						End If
 						rsWork.MoveNext
 					Loop
 					rsWork.Close
