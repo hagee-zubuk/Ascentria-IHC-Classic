@@ -771,8 +771,8 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 		
 		'FOR EXPORT
 		Session("sqlVar") = Z_DoEncrypt(Pdate & "|" & Request("type") & "|" & sqlProc)
-		Response.Write sqlProc
-		Response.End
+		' Response.Write sqlProc
+		' Response.End
 		rsProc.Open sqlProc, g_strCONN, 1, 3
 		If Not rsProc.EOF Then
 			markerX = 1
@@ -2467,7 +2467,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 		Set fso = CreateObject("Scripting.FileSystemObject")
 		a = 1
 		tmpdate = replace(date, "/", "")
-		tmpFolder = "C:\WORK\ascentria\ihc\export"		' was: C:\Work\lss-dbvortex\export
+		tmpFolder = "C:\Work\lss-dbvortex\export" ' was: C:\WORK\ascentria\ihc\export"		' was: C:\Work\lss-dbvortex\export
 
 		ProcCSV = tmpFolder & "\ProcItem" & tmpdate & ".csv"
 		BillCSV = tmpFolder & "\BillItem" & tmpdate & ".csv"
